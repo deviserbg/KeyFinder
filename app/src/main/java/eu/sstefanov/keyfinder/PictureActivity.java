@@ -5,12 +5,14 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -22,6 +24,7 @@ import android.widget.Toast;
  */
 public class PictureActivity extends Activity {
 
+    private final static String TAG = PictureActivity.class.getSimpleName();
 
     private BluetoothLeService mBluetoothLeService;
     private String mDeviceAddress;
@@ -69,6 +72,29 @@ public class PictureActivity extends Activity {
         showCamera = new ShowCamera(this, cameraObject);
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(showCamera);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(mGattUpdateReceiver,  makeGattUpdateIntentFilter());
+        if (mBluetoothLeService != null) {
+            final boolean result = mBluetoothLeService.connect(mDeviceAddress);
+            Log.d(TAG, "Connect request result=" + result);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mGattUpdateReceiver);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(mServiceConnection);
+        mBluetoothLeService = null;
     }
     public void snapIt(View view){
         cameraObject.takePicture(null, null, capturedIt);
@@ -134,4 +160,13 @@ public class PictureActivity extends Activity {
 //            }
         }
     };
+
+    private static IntentFilter makeGattUpdateIntentFilter() {
+        final IntentFilter intentFilter = new IntentFilter();
+//        intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
+//        intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
+//        intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
+        intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
+        return intentFilter;
+    }
 }
