@@ -69,6 +69,9 @@ public class BluetoothLeService extends Service {
     public final static UUID UUID_ACTION_BUTTON =
             UUID.fromString(SampleGattAttributes.ACTION_BUTTON_CHARACTERISTIC);
 
+    public final static UUID UUID_ACTION_SERVICE =
+            UUID.fromString(SampleGattAttributes.ACTION_SERVICE);
+
 //    public final static UUID UUID_ACTION_BUTTON_DOUBLE =
 //            UUID.fromString(SampleGattAttributes.ACTION_BUTTON__DOUBLE_CHARACTERISTIC);
 
@@ -273,7 +276,49 @@ public class BluetoothLeService extends Service {
                 " connection.");
         mBluetoothDeviceAddress = address;
         mConnectionState = STATE_CONNECTING;
+
+
+        activateActionData();
+
         return true;
+    }
+
+    public void activateActionData() {
+
+        BluetoothGattService gattService = mBluetoothGatt.getService(UUID_ACTION_SERVICE);
+
+        if (gattService != null) {
+                BluetoothGattCharacteristic gattCharacteristic = gattService.getCharacteristic(UUID_ACTION_BUTTON);
+
+                setCharacteristicNotification(gattCharacteristic, true);
+            }
+
+//            mBluetoothGatt.discoverServices();
+//            List<BluetoothGattService> gattServices = getSupportedGattServices();
+//            mBluetoothGatt.setCharacteristicNotification()
+//
+//            boolean isActivated = false;
+//
+//            for (BluetoothGattService gattService : gattServices) {
+//                List<BluetoothGattCharacteristic> gattCharacteristics =
+//                        gattService.getCharacteristics();
+//
+//                for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
+//                    if (UUID_ACTION_BUTTON.equals(gattCharacteristic.getUuid())) {
+////                        mBluetoothLeService.setCharacteristicNotification(
+////                                gattCharacteristic, true);
+//
+//                        setCharacteristicNotification(gattCharacteristic, true);
+//
+//                        isActivated = true;
+//                        break;
+//                    }
+//                }
+//
+//                if (isActivated) {
+//                    break;
+//                }
+//            }
     }
 
     /**

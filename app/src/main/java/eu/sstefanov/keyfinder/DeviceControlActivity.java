@@ -230,9 +230,8 @@ public class DeviceControlActivity extends Activity {
 
         if (mBluetoothLeService != null) {
             mBluetoothLeService.connect(mDeviceAddress);
-        } else {
-
         }
+
 
 //        pic = (ImageView)findViewById(R.id.imageView1);
 //        cameraObject = isCameraAvailiable();

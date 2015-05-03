@@ -2,6 +2,7 @@ package eu.sstefanov.keyfinder;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattService;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -20,6 +21,9 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.util.List;
+import java.util.UUID;
+
 /**
  * Created by sstefanov on 27-Apr-15.
  */
@@ -29,6 +33,8 @@ public class PictureActivity extends Activity {
 
     private BluetoothLeService mBluetoothLeService;
     private String mDeviceAddress;
+    public final static UUID UUID_ACTION_BUTTON =
+            UUID.fromString(SampleGattAttributes.ACTION_BUTTON_CHARACTERISTIC);
 
     private Camera cameraObject;
     private ShowCamera showCamera;
@@ -120,8 +126,17 @@ public class PictureActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.picture);
 
+//        final Intent intent = getIntent();
+//        mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
+//        mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
+
+        mDeviceAddress = "18:7A:93:02:86:8C";
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
+
+        if (mBluetoothLeService != null) {
+            mBluetoothLeService.connect(mDeviceAddress);
+        }
 
         pic = (ImageView)findViewById(R.id.imageView1);
         cameraObject = isCameraAvailiable();
@@ -138,6 +153,7 @@ public class PictureActivity extends Activity {
             final boolean result = mBluetoothLeService.connect(mDeviceAddress);
             Log.d(TAG, "Connect request result=" + result);
         }
+
     }
 
     @Override
@@ -152,6 +168,35 @@ public class PictureActivity extends Activity {
         unbindService(mServiceConnection);
         mBluetoothLeService = null;
     }
+
+    public void activateActionData() {
+
+        if (mBluetoothLeService != null) {
+            List<BluetoothGattService> gattServices = mBluetoothLeService.getSupportedGattServices();
+
+            boolean isActivated = false;
+
+            for (BluetoothGattService gattService : gattServices) {
+                List<BluetoothGattCharacteristic> gattCharacteristics =
+                        gattService.getCharacteristics();
+
+                for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
+                    if (UUID_ACTION_BUTTON.equals(gattCharacteristic.getUuid())) {
+                        mBluetoothLeService.setCharacteristicNotification(
+                                gattCharacteristic, true);
+                        isActivated = true;
+                        break;
+                    }
+                }
+
+                if (isActivated) {
+                    break;
+                }
+            }
+        }
+    }
+
+
     public void snapIt(View view){
         cameraObject.takePicture(null, null, capturedIt);
     }
