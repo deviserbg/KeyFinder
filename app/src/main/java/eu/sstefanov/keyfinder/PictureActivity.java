@@ -19,8 +19,11 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.SimpleExpandableListAdapter;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,8 +34,13 @@ public class PictureActivity extends Activity {
 
     private final static String TAG = PictureActivity.class.getSimpleName();
 
+    public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
+    public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
+
     private BluetoothLeService mBluetoothLeService;
     private String mDeviceAddress;
+    private String mDeviceName;
+    
     public final static UUID UUID_ACTION_BUTTON =
             UUID.fromString(SampleGattAttributes.ACTION_BUTTON_CHARACTERISTIC);
 
@@ -98,26 +106,27 @@ public class PictureActivity extends Activity {
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
 
-            if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-                snapIt(null);
-            }
+//            if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+//                snapIt(null);
+//            }
 
-
-//            if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
+            if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
 //                mConnected = true;
 //                updateConnectionState(R.string.connected);
-//                invalidateOptionsMenu();
-//            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
+                invalidateOptionsMenu();
+            } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) {
 //                mConnected = false;
 //                updateConnectionState(R.string.disconnected);
-//                invalidateOptionsMenu();
+                invalidateOptionsMenu();
 //                clearUI();
-//            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-//                // Show all the supported services and characteristics on the user interface.
+            } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+                // Show all the supported services and characteristics on the user interface.
 //                displayGattServices(mBluetoothLeService.getSupportedGattServices());
-//            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+                activateActionData(mBluetoothLeService.getSupportedGattServices());
+            } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
 //                displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
-//            }
+                snapIt(null);
+            }
         }
     };
 
@@ -126,11 +135,11 @@ public class PictureActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.picture);
 
-//        final Intent intent = getIntent();
-//        mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
-//        mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
+        final Intent intent = getIntent();
+        mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
+        mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
 
-        mDeviceAddress = "18:7A:93:02:86:8C";
+//        mDeviceAddress = "18:7A:93:02:86:8C";
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
@@ -143,6 +152,8 @@ public class PictureActivity extends Activity {
         showCamera = new ShowCamera(this, cameraObject);
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(showCamera);
+
+
     }
 
     @Override
@@ -169,29 +180,25 @@ public class PictureActivity extends Activity {
         mBluetoothLeService = null;
     }
 
-    public void activateActionData() {
+    public void activateActionData(List<BluetoothGattService> gattServices) {
 
-        if (mBluetoothLeService != null) {
-            List<BluetoothGattService> gattServices = mBluetoothLeService.getSupportedGattServices();
+        boolean isActivated = false;
 
-            boolean isActivated = false;
+        for (BluetoothGattService gattService : gattServices) {
+            List<BluetoothGattCharacteristic> gattCharacteristics =
+                    gattService.getCharacteristics();
 
-            for (BluetoothGattService gattService : gattServices) {
-                List<BluetoothGattCharacteristic> gattCharacteristics =
-                        gattService.getCharacteristics();
-
-                for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
-                    if (UUID_ACTION_BUTTON.equals(gattCharacteristic.getUuid())) {
-                        mBluetoothLeService.setCharacteristicNotification(
-                                gattCharacteristic, true);
-                        isActivated = true;
-                        break;
-                    }
-                }
-
-                if (isActivated) {
+            for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
+                if (UUID_ACTION_BUTTON.equals(gattCharacteristic.getUuid())) {
+                    mBluetoothLeService.setCharacteristicNotification(
+                            gattCharacteristic, true);
+                    isActivated = true;
                     break;
                 }
+            }
+
+            if (isActivated) {
+                break;
             }
         }
     }
@@ -210,9 +217,9 @@ public class PictureActivity extends Activity {
 
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
-//        intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
-//        intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
-//        intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         return intentFilter;
     }
