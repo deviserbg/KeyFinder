@@ -106,9 +106,6 @@ public class PictureActivity extends Activity {
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
 
-//            if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
-//                snapIt(null);
-//            }
 
             if (BluetoothLeService.ACTION_GATT_CONNECTED.equals(action)) {
 //                mConnected = true;
