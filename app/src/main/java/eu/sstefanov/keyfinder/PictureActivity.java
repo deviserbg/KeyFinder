@@ -9,21 +9,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.SimpleExpandableListAdapter;
-import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import com.commonsware.cwac.camera.CameraFragment;
+import com.commonsware.cwac.camera.SimpleCameraHost;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -44,35 +38,37 @@ public class PictureActivity extends Activity {
     public final static UUID UUID_ACTION_BUTTON =
             UUID.fromString(SampleGattAttributes.ACTION_BUTTON_CHARACTERISTIC);
 
-    private Camera cameraObject;
-    private ShowCamera showCamera;
-    private ImageView pic;
-    public static Camera isCameraAvailiable(){
-        Camera object = null;
-        try {
-            object = Camera.open();
-        }
-        catch (Exception e){
-        }
-        return object;
-    }
+    private final String TAG_CAMERA_FRAGMENT = "camera_fragment";
 
-    private Camera.PictureCallback capturedIt = new Camera.PictureCallback() {
-
-        @Override
-        public void onPictureTaken(byte[] data, Camera camera) {
-
-            Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-            if(bitmap==null){
-                Toast.makeText(getApplicationContext(), "not taken", Toast.LENGTH_SHORT).show();
-            }
-            else
-            {
-                Toast.makeText(getApplicationContext(), "taken", Toast.LENGTH_SHORT).show();
-            }
-            cameraObject.release();
-        }
-    };
+//    private Camera cameraObject;
+//    private ShowCamera showCamera;
+//    private ImageView pic;
+//    public static Camera isCameraAvailiable(){
+//        Camera object = null;
+//        try {
+//            object = Camera.open();
+//        }
+//        catch (Exception e){
+//        }
+//        return object;
+//    }
+//
+//    private Camera.PictureCallback capturedIt = new Camera.PictureCallback() {
+//
+//        @Override
+//        public void onPictureTaken(byte[] data, Camera camera) {
+//
+//            Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+//            if(bitmap==null){
+//                Toast.makeText(getApplicationContext(), "not taken", Toast.LENGTH_SHORT).show();
+//            }
+//            else
+//            {
+//                Toast.makeText(getApplicationContext(), "taken", Toast.LENGTH_SHORT).show();
+//            }
+//            cameraObject.release();
+//        }
+//    };
 
 
     // Code to manage Service lifecycle.
@@ -122,7 +118,7 @@ public class PictureActivity extends Activity {
                 activateActionData(mBluetoothLeService.getSupportedGattServices());
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
 //                displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
-                snapIt(null);
+                takePicture();
             }
         }
     };
@@ -144,12 +140,27 @@ public class PictureActivity extends Activity {
             mBluetoothLeService.connect(mDeviceAddress);
         }
 
-        pic = (ImageView)findViewById(R.id.imageView1);
-        cameraObject = isCameraAvailiable();
-        showCamera = new ShowCamera(this, cameraObject);
-        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-        preview.addView(showCamera);
+//        pic = (ImageView)findViewById(R.id.imageView1);
+//        cameraObject = isCameraAvailiable();
+//        showCamera = new ShowCamera(this, cameraObject);
+//        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+//        preview.addView(showCamera);
 
+        //Create the CameraFragment and add it to the layout
+        CameraFragment f = new CameraFragment();
+        getFragmentManager().beginTransaction()
+                .add(R.id.camera_preview, f, TAG_CAMERA_FRAGMENT)
+                .commit();
+
+        //Set the CameraHost
+        f.setHost(new SimpleCameraHost(this));
+
+//        findViewById(R.id.button_capture).setOnClickListener(new OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                takePicture();
+//            }
+//        });
 
     }
 
@@ -202,7 +213,26 @@ public class PictureActivity extends Activity {
 
 
     public void snapIt(View view){
-        cameraObject.takePicture(null, null, capturedIt);
+//        cameraObject.takePicture(null, null, capturedIt);
+    }
+
+    /**
+     * Handel button capture click event.
+     * @param view
+     */
+    public void takePicture(View view) {
+        takePicture();
+    }
+    /**
+     * Checks that the CameraFragment exists and is visible to the user,
+     * then takes a picture.
+     */
+    private void takePicture() {
+        CameraFragment f = (CameraFragment) getFragmentManager().findFragmentByTag(TAG_CAMERA_FRAGMENT);
+        if (f != null && f.isVisible()) {
+//            f.autoFocus();
+            f.takePicture();
+        }
     }
 
     @Override
