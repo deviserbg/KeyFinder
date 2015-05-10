@@ -77,43 +77,6 @@ public class DeviceControlActivity extends Activity {
     public final static UUID UUID_SEND_ALARM =
             UUID.fromString(SampleGattAttributes.SEND_ALARM_CHARACTERISTIC);
 
-    //mange camera
-//    private Camera cameraObject;
-//    private ShowCamera showCamera;
-//    private ImageView pic;
-//    public static Camera isCameraAvailiable(){
-//        Camera object = null;
-//        try {
-//            object = Camera.open();
-//        }
-//        catch (Exception e){
-//        }
-//        return object;
-//    }
-//
-//    private Camera.PictureCallback capturedIt = new Camera.PictureCallback() {
-//
-//        @Override
-//        public void onPictureTaken(byte[] data, Camera camera) {
-//
-//            Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-//            if(bitmap==null){
-//                Toast.makeText(getApplicationContext(), "not taken", Toast.LENGTH_SHORT).show();
-//            }
-//            else
-//            {
-//                Toast.makeText(getApplicationContext(), "taken", Toast.LENGTH_SHORT).show();
-//            }
-//            cameraObject.release();
-//        }
-//    };
-//
-//    public void snapIt(View view){
-//        cameraObject.takePicture(null, null, capturedIt);
-//    }
-
-    // End camera
-
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -293,19 +256,18 @@ public class DeviceControlActivity extends Activity {
     }
 
     public void connect(View view) {
-//        Intent intent = new Intent(this, PhotoIntentActivity.class);
-//
-//        startActivity(intent);
         if (mBluetoothLeService != null) {
             mBluetoothLeService.connect(mDeviceAddress);
-        } else {
-//            mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
-//            if (!mBluetoothLeService.initialize()) {
-//                Log.e(TAG, "Unable to initialize Bluetooth");
-//                finish();
-//            }
-//            // Automatically connects to the device upon successful start-up initialization.
-//            mBluetoothLeService.connect(mDeviceAddress);
+        }
+    }
+
+    /**
+     * Send signal to BLE device, to make sound.
+     * @param view
+     */
+    public void findDevice(View view) {
+        if (mBluetoothLeService != null) {
+            mBluetoothLeService.sendAlarmSignalToDevice();
         }
     }
 

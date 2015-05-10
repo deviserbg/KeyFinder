@@ -40,4 +40,5 @@
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
     <string name="Capture">Capture</string>
+    <string name="btnFindDevice">Find device</string>
 </resources>

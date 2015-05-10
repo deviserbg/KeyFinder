@@ -28,6 +28,9 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
@@ -77,6 +80,9 @@ public class BluetoothLeService extends Service {
 
     public final static UUID UUID_SEND_ALARM =
             UUID.fromString(SampleGattAttributes.SEND_ALARM_CHARACTERISTIC);
+
+    public final static UUID UUID_BATTERY_CHAR_ID =
+            UUID.fromString(SampleGattAttributes.BATTERY_CHARACTERISTIC);
 
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
@@ -157,7 +163,7 @@ public class BluetoothLeService extends Service {
             final byte[] data = characteristic.getValue();
             if (data != null && data.length > 0) {
                 final StringBuilder stringBuilder = new StringBuilder(data.length);
-                for(byte byteChar : data)
+                for (byte byteChar : data)
                     stringBuilder.append(String.format("%02X ", byteChar));
 
                 int buttonPressType = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
@@ -165,9 +171,12 @@ public class BluetoothLeService extends Service {
                 if (buttonPressType == 1) {
                     Log.d(TAG, "Button is pressed single time ");
 
-
                 } else if (buttonPressType == 2) {
                     Log.d(TAG, "Button is pressed long time ");
+
+                    Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+                    Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+                    r.play();
                 } else {
                     Log.d(TAG, "Not in range " + String.valueOf(buttonPressType));
                 }
@@ -176,6 +185,10 @@ public class BluetoothLeService extends Service {
 
                 intent.putExtra(EXTRA_DATA, new String(data) + "\n" + stringBuilder.toString());
             }
+        } else if(UUID_BATTERY_CHAR_ID.equals(characteristic.getUuid())) {
+            // int i = Integer.valueOf(Utils.bytesToHexString(paramAnonymousBluetoothGattCharacteristic.getValue()), 16).intValue();
+            String data = Integer.valueOf(bytesToHexString(characteristic.getValue()), 16).toString();
+            intent.putExtra(EXTRA_DATA, data);
         } else {
             // For all other profiles, writes the data formatted in HEX.
             final byte[] data = characteristic.getValue();
@@ -278,16 +291,6 @@ public class BluetoothLeService extends Service {
         mBluetoothDeviceAddress = address;
         mConnectionState = STATE_CONNECTING;
 
-
-//        BluetoothGattService gattService = mBluetoothGatt.getService(UUID_ACTION_SERVICE);
-//
-//        if (gattService != null) {
-//            BluetoothGattCharacteristic gattCharacteristic = gattService.getCharacteristic(UUID_ACTION_BUTTON);
-//
-//            setCharacteristicNotification(gattCharacteristic, true);
-//        }
-//        activateActionData();
-
         return true;
     }
 
@@ -300,33 +303,6 @@ public class BluetoothLeService extends Service {
 
                 setCharacteristicNotification(gattCharacteristic, true);
             }
-
-//            mBluetoothGatt.discoverServices();
-//            List<BluetoothGattService> gattServices = getSupportedGattServices();
-//            mBluetoothGatt.setCharacteristicNotification()
-//
-//            boolean isActivated = false;
-//
-//            for (BluetoothGattService gattService : gattServices) {
-//                List<BluetoothGattCharacteristic> gattCharacteristics =
-//                        gattService.getCharacteristics();
-//
-//                for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
-//                    if (UUID_ACTION_BUTTON.equals(gattCharacteristic.getUuid())) {
-////                        mBluetoothLeService.setCharacteristicNotification(
-////                                gattCharacteristic, true);
-//
-//                        setCharacteristicNotification(gattCharacteristic, true);
-//
-//                        isActivated = true;
-//                        break;
-//                    }
-//                }
-//
-//                if (isActivated) {
-//                    break;
-//                }
-//            }
     }
 
     /**
@@ -437,7 +413,7 @@ public class BluetoothLeService extends Service {
 
         // Utils.hexStringToBytes("AA0302FFFF")
 
-        characteristic.setValue(hexStringToBytes("AA0302FFFF"));
+//        characteristic.setValue(hexStringToBytes("AA0302FFFF"));
         mBluetoothGatt.writeCharacteristic(characteristic);
 
     }
@@ -452,6 +428,38 @@ public class BluetoothLeService extends Service {
         if (mBluetoothGatt == null) return null;
 
         return mBluetoothGatt.getServices();
+    }
+
+    /**
+     * Get particular characteristic by his UUID
+     * @param serviceId The UUID of the service
+     * @param characteristicId The UUIDof the characteristic
+     * @return <code>BluetoothGattCharacteristic</code>
+     */
+    public BluetoothGattCharacteristic getCharacteristic(UUID serviceId, UUID characteristicId) {
+
+        if (mBluetoothGatt == null) return null;
+
+        BluetoothGattService service = mBluetoothGatt.getService(serviceId);
+
+        if (service == null) {
+            return null;
+        } else {
+            return service.getCharacteristic(characteristicId);
+        }
+    }
+
+    /**
+     * Write Alarm characteristic to device
+     */
+    public void sendAlarmSignalToDevice() {
+        BluetoothGattCharacteristic characteristic = getCharacteristic(UUID_ACTION_SERVICE, UUID_SEND_ALARM);
+
+        if (characteristic != null) {
+
+            characteristic.setValue(hexStringToBytes(SampleGattAttributes.ALARM_CHARACTERISTIC_VALUE));
+            mBluetoothGatt.writeCharacteristic(characteristic);
+        }
     }
 
     public static byte[] hexStringToBytes(String s)
@@ -480,5 +488,26 @@ public class BluetoothLeService extends Service {
     private static byte charToByte(char c)
     {
         return (byte)"0123456789ABCDEF".indexOf(c);
+    }
+
+    public static String bytesToHexString(byte[] paramArrayOfByte)
+    {
+        StringBuilder localStringBuilder = new StringBuilder("");
+        if ((paramArrayOfByte == null) || (paramArrayOfByte.length <= 0)) {
+            return null;
+        }
+        int i = 0;
+        for (;;)
+        {
+            if (i >= paramArrayOfByte.length) {
+                return localStringBuilder.toString();
+            }
+            String str = Integer.toHexString(paramArrayOfByte[i] & 0xFF);
+            if (str.length() < 2) {
+                localStringBuilder.append(0);
+            }
+            localStringBuilder.append(str.toUpperCase());
+            i += 1;
+        }
     }
 }

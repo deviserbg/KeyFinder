@@ -188,6 +188,10 @@ public class PictureActivity extends Activity {
         mBluetoothLeService = null;
     }
 
+    /**
+     * Set notification for button click to true.
+     * @param gattServices
+     */
     public void activateActionData(List<BluetoothGattService> gattServices) {
 
         boolean isActivated = false;
@@ -209,11 +213,6 @@ public class PictureActivity extends Activity {
                 break;
             }
         }
-    }
-
-
-    public void snapIt(View view){
-//        cameraObject.takePicture(null, null, capturedIt);
     }
 
     /**
