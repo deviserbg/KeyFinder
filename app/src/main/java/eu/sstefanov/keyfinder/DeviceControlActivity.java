@@ -196,11 +196,6 @@ public class DeviceControlActivity extends Activity {
         }
 
 
-//        pic = (ImageView)findViewById(R.id.imageView1);
-//        cameraObject = isCameraAvailiable();
-//        showCamera = new ShowCamera(this, cameraObject);
-//        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-//        preview.addView(showCamera);
     }
 
     @Override

@@ -260,6 +260,7 @@ public class DeviceScanActivity extends ListActivity {
                 viewHolder.deviceName = (TextView) view.findViewById(R.id.device_name);
                 viewHolder.deviceAdvertising = (TextView) view.findViewById(R.id.device_advertising);
                 viewHolder.deviceDistance = (TextView) view.findViewById(R.id.device_distance);
+                viewHolder.deviceState = (TextView) view.findViewById(R.id.device_state);
 
                 view.setTag(viewHolder);
             } else {
@@ -294,6 +295,7 @@ public class DeviceScanActivity extends ListActivity {
                 viewHolder.deviceDistance.setText("NULL");
             }
 
+            viewHolder.deviceState.setText( String.valueOf(device.getBondState()));
             return view;
         }
     }
@@ -336,6 +338,7 @@ public class DeviceScanActivity extends ListActivity {
         TextView deviceAddress;
         TextView deviceAdvertising;
         TextView deviceDistance;
+        TextView deviceState;
     }
 
     private double calculateDistance(int txPower, double rssi) {
