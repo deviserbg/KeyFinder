@@ -165,8 +165,11 @@ public final class ScanRecord {
         String localName = null;
         int txPowerLevel = Integer.MIN_VALUE;
 
+//        String chars = bytesToHexString(scanRecord);
+
         SparseArray<byte[]> manufacturerData = new SparseArray<byte[]>();
         Map<ParcelUuid, byte[]> serviceData = new ArrayMap<ParcelUuid, byte[]>();
+
 
         try {
             while (currentPos < scanRecord.length) {
@@ -249,11 +252,10 @@ public final class ScanRecord {
 
     @Override
     public String toString() {
-//        return "ScanRecord [mAdvertiseFlags=" + mAdvertiseFlags + ", mServiceUuids=" + mServiceUuids
+        return "ScanRecord [mAdvertiseFlags=" + mAdvertiseFlags + ", mServiceUuids=" + mServiceUuids
 //                + ", mManufacturerSpecificData=" + BluetoothLeUtils.toString(mManufacturerSpecificData)
 //                + ", mServiceData=" + BluetoothLeUtils.toString(mServiceData)
-//                + ", mTxPowerLevel=" + mTxPowerLevel + ", mDeviceName=" + mDeviceName + "]";
-        return "";
+                + ", mTxPowerLevel=" + mTxPowerLevel + ", mDeviceName=" + mDeviceName + "]";
     }
 
     // Parse service UUIDs.
@@ -275,4 +277,31 @@ public final class ScanRecord {
         System.arraycopy(scanRecord, start, bytes, 0, length);
         return bytes;
     }
+
+//
+//    private static byte charToByte(char c)
+//    {
+//        return (byte)"0123456789ABCDEF".indexOf(c);
+//    }
+//
+//    public static String bytesToHexString(byte[] paramArrayOfByte)
+//    {
+//        StringBuilder localStringBuilder = new StringBuilder("");
+//        if ((paramArrayOfByte == null) || (paramArrayOfByte.length <= 0)) {
+//            return null;
+//        }
+//        int i = 0;
+//        for (;;)
+//        {
+//            if (i >= paramArrayOfByte.length) {
+//                return localStringBuilder.toString();
+//            }
+//            String str = Integer.toHexString(paramArrayOfByte[i] & 0xFF);
+//            if (str.length() < 2) {
+//                localStringBuilder.append(0);
+//            }
+//            localStringBuilder.append(str.toUpperCase());
+//            i += 1;
+//        }
+//    }
 }

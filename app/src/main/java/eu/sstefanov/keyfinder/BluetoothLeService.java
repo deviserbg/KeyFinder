@@ -84,6 +84,9 @@ public class BluetoothLeService extends Service {
     public final static UUID UUID_BATTERY_CHAR_ID =
             UUID.fromString(SampleGattAttributes.BATTERY_CHARACTERISTIC);
 
+    public static String DEVICE_NAME;
+    public static String DEVICE_ADDRESS;
+
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
@@ -290,6 +293,9 @@ public class BluetoothLeService extends Service {
                 " connection.");
         mBluetoothDeviceAddress = address;
         mConnectionState = STATE_CONNECTING;
+
+        DEVICE_ADDRESS = address;
+        DEVICE_NAME = device.getName();
 
         return true;
     }

@@ -1,12 +1,15 @@
 package eu.sstefanov.keyfinder;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 // import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
 
 public class MainActivity extends Activity {
@@ -17,6 +20,16 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        TextView addressView = (TextView) findViewById(R.id.deviceAddress);
+        addressView.setText(BluetoothLeService.DEVICE_ADDRESS);
+
+        TextView nameView = (TextView) findViewById(R.id.deviceName);
+        nameView.setText(BluetoothLeService.DEVICE_NAME);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -49,4 +62,5 @@ public class MainActivity extends Activity {
         Intent intent = new Intent(this, PictureActivity.class);
         startActivity(intent);
     }
+
 }

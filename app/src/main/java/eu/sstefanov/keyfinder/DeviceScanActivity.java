@@ -21,6 +21,8 @@ import android.app.ListActivity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.*;
+import android.bluetooth.le.ScanRecord;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -41,6 +43,7 @@ import android.widget.Toast;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -59,6 +62,8 @@ public class DeviceScanActivity extends ListActivity {
 
     private Map<String, Integer> mAdvert;
 
+    private Map<String, Double> mDistance;
+
     private static final int REQUEST_ENABLE_BT = 1;
     // Stops scanning after 10 seconds.
     private static final long SCAN_PERIOD = 10000;
@@ -71,6 +76,7 @@ public class DeviceScanActivity extends ListActivity {
         mHandler = new Handler();
 
         mAdvert = new HashMap<String, Integer>();
+        mDistance = new HashMap<String, Double>();
 
         // Use this check to determine whether BLE is supported on the device.  Then you can
         // selectively disable BLE-related features.
@@ -253,6 +259,7 @@ public class DeviceScanActivity extends ListActivity {
                 viewHolder.deviceAddress = (TextView) view.findViewById(R.id.device_address);
                 viewHolder.deviceName = (TextView) view.findViewById(R.id.device_name);
                 viewHolder.deviceAdvertising = (TextView) view.findViewById(R.id.device_advertising);
+                viewHolder.deviceDistance = (TextView) view.findViewById(R.id.device_distance);
 
                 view.setTag(viewHolder);
             } else {
@@ -275,6 +282,18 @@ public class DeviceScanActivity extends ListActivity {
             } else {
                 viewHolder.deviceAdvertising.setText("NULL");
             }
+
+
+            Double distance = mDistance.get(device.getAddress());
+
+//            DecimalFormat df = new DecimalFormat("#.##");
+
+            if (distance > 0) {
+                viewHolder.deviceDistance.setText(String.format("%.2f", distance.doubleValue()));
+            } else {
+                viewHolder.deviceDistance.setText("NULL");
+            }
+
             return view;
         }
     }
@@ -286,16 +305,26 @@ public class DeviceScanActivity extends ListActivity {
         mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
 
             @Override
-            public void onLeScan(final BluetoothDevice device, int rssi, final byte[] scanRecord) {
+            public void onLeScan(final BluetoothDevice device, final int rssi, final byte[] scanRecord) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         mLeDeviceListAdapter.addDevice(device);
                         mLeDeviceListAdapter.notifyDataSetChanged();
-                    ScanRecord sr = ScanRecord.parseFromBytes(scanRecord);
 
-                    mAdvert.put(device.getAddress(), sr.getAdvertiseFlags());
+                        int txPower = (int) scanRecord[29];
 
+                        mAdvert.put(device.getAddress(), Integer.valueOf(txPower));
+
+                        double distance = calculateDistance(txPower, rssi);
+                        mDistance.put(device.getAddress(), Double.valueOf(distance));
+
+//                    ScanRecord sr = ScanRecord.parseFromBytes(scanRecord);
+//
+//                    mAdvert.put(device.getAddress(), sr.getAdvertiseFlags());
+//
+//                    double distance = calculateDistance(sr.getTxPowerLevel(), rssi);
+//                    mDistance.put(device.getAddress(), Double.valueOf(distance));
                     }
                 });
             }
@@ -306,6 +335,28 @@ public class DeviceScanActivity extends ListActivity {
         TextView deviceName;
         TextView deviceAddress;
         TextView deviceAdvertising;
+        TextView deviceDistance;
     }
 
+    private double calculateDistance(int txPower, double rssi) {
+        if (rssi == 0) {
+            return -1.0; // if we cannot determine accuracy, return -1.
+        }
+
+        double mCoefficient1 = 0.42093;
+        double mCoefficient2 = 6.9476;
+        double mCoefficient3 = 0.54992;
+
+        double ratio = rssi*1.0/txPower;
+        double distance;
+        if (ratio < 1.0) {
+            distance =  Math.pow(ratio,10);
+        }
+        else {
+            distance =  (mCoefficient1)*Math.pow(ratio,mCoefficient2) + mCoefficient3;
+        }
+
+
+        return distance;
+    }
 }
