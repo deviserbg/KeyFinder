@@ -41,4 +41,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="Capture">Capture</string>
     <string name="btnFindDevice">Find device</string>
+    <string name="btnTakePicture">Take picture</string>
+    <string name="label_battery_level">Battery Level</string>
+    <string name="btnReadBattery">Read Battery</string>
 </resources>

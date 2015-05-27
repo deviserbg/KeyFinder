@@ -18,25 +18,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="10dp">
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        >
-        <Button
-            android:id="@+id/button_capture"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="connect"
-            android:text="@string/btnConnect" />
 
-        <Button
-            android:id="@+id/btnFindDevice"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="findDevice"
-            android:text="@string/btnFindDevice" />
-        </LinearLayout>
+
     <LinearLayout android:orientation="horizontal"
                   android:layout_width="match_parent"
                   android:layout_height="wrap_content"
@@ -74,7 +57,7 @@
                   android:layout_margin="10dp">
         <TextView android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
-                  android:text="@string/label_data"
+                  android:text="@string/label_battery_level"
                   android:textSize="18sp"/>
         <Space android:layout_width="5dp"
                android:layout_height="wrap_content"/>
@@ -84,7 +67,38 @@
                   android:text="@string/no_data"
                   android:textSize="18sp"/>
     </LinearLayout>
-    <ExpandableListView android:id="@+id/gatt_services_list"
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        >
+        <Button
+            android:id="@+id/button_capture"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:onClick="connect"
+            android:text="@string/btnConnect" />
+
+        <Button
+            android:id="@+id/btnFindDevice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="findDevice"
+            android:text="@string/btnFindDevice" />
+        <Button
+            android:id="@+id/btnTakePicture"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="takePicture"
+            android:text="@string/btnTakePicture" />
+        <Button
+            android:id="@+id/btnReadBattery"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="batteryLevel"
+            android:text="@string/btnReadBattery" />
+    </LinearLayout>
+    <!--<ExpandableListView android:id="@+id/gatt_services_list"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"/>-->
 </LinearLayout>

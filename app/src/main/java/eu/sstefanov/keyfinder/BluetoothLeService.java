@@ -81,6 +81,9 @@ public class BluetoothLeService extends Service {
     public final static UUID UUID_SEND_ALARM =
             UUID.fromString(SampleGattAttributes.SEND_ALARM_CHARACTERISTIC);
 
+    public final static UUID UUID_BATTERY_SERVICE =
+            UUID.fromString(SampleGattAttributes.BATTERY_SERVICE);
+
     public final static UUID UUID_BATTERY_CHAR_ID =
             UUID.fromString(SampleGattAttributes.BATTERY_CHARACTERISTIC);
 
@@ -451,7 +454,8 @@ public class BluetoothLeService extends Service {
         if (service == null) {
             return null;
         } else {
-            return service.getCharacteristic(characteristicId);
+            BluetoothGattCharacteristic ch = service.getCharacteristic(characteristicId);
+            return ch;
         }
     }
 
@@ -467,6 +471,23 @@ public class BluetoothLeService extends Service {
             mBluetoothGatt.writeCharacteristic(characteristic);
         }
     }
+
+    /**
+     * Get battery level from BLE device.
+     * @return String value of battery percent
+     */
+//    public String getBatteryLevel() {
+//
+//        BluetoothGattCharacteristic characteristic = getCharacteristic(UUID_BATTERY_SERVICE, UUID_BATTERY_CHAR_ID);
+//
+//        if (characteristic != null) {
+//            characteristic = mBluetoothGatt.readCharacteristic(characteristic);
+//
+//            return String.valueOf(Integer.valueOf(bytesToHexString(characteristic.getValue()), 16));
+//        }
+//
+//        return null;
+//    }
 
     public static byte[] hexStringToBytes(String s)
     {
