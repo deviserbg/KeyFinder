@@ -62,7 +62,7 @@ public class DeviceScanActivity extends ListActivity {
 
     private Map<String, Integer> mAdvert;
 
-    private Map<String, Double> mDistance;
+    private Map<String, String> mDistance;
 
     private static final int REQUEST_ENABLE_BT = 1;
     // Stops scanning after 10 seconds.
@@ -76,7 +76,7 @@ public class DeviceScanActivity extends ListActivity {
         mHandler = new Handler();
 
         mAdvert = new HashMap<String, Integer>();
-        mDistance = new HashMap<String, Double>();
+        mDistance = new HashMap<String, String>();
 
         // Use this check to determine whether BLE is supported on the device.  Then you can
         // selectively disable BLE-related features.
@@ -285,15 +285,17 @@ public class DeviceScanActivity extends ListActivity {
             }
 
 
-            Double distance = mDistance.get(device.getAddress());
+//            Double distance = mDistance.get(device.getAddress());
+//
+////            DecimalFormat df = new DecimalFormat("#.##");
+//
+//            if (distance > 0) {
+//                viewHolder.deviceDistance.setText(String.format("%.2f", distance.doubleValue()));
+//            } else {
+//                viewHolder.deviceDistance.setText("NULL");
+//            }
 
-//            DecimalFormat df = new DecimalFormat("#.##");
-
-            if (distance > 0) {
-                viewHolder.deviceDistance.setText(String.format("%.2f", distance.doubleValue()));
-            } else {
-                viewHolder.deviceDistance.setText("NULL");
-            }
+            viewHolder.deviceDistance.setText(mDistance.get(device.getAddress()));
 
             viewHolder.deviceState.setText( String.valueOf(device.getBondState()));
             return view;
@@ -311,6 +313,7 @@ public class DeviceScanActivity extends ListActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+
                         mLeDeviceListAdapter.addDevice(device);
                         mLeDeviceListAdapter.notifyDataSetChanged();
 
@@ -318,9 +321,13 @@ public class DeviceScanActivity extends ListActivity {
 
                         mAdvert.put(device.getAddress(), Integer.valueOf(txPower));
 
-                        double distance = calculateDistance(txPower, rssi);
-                        mDistance.put(device.getAddress(), Double.valueOf(distance));
+//                        double distance = calculateDistance(txPower, rssi);
+//                        mDistance.put(device.getAddress(), Double.valueOf(distance));
 
+                        List<AdRecord> adRecords = AdRecord.parseScanRecord(scanRecord);
+
+
+                        mDistance.put(device.getAddress(), TextUtils.join(",", adRecords));
 //                    ScanRecord sr = ScanRecord.parseFromBytes(scanRecord);
 //
 //                    mAdvert.put(device.getAddress(), sr.getAdvertiseFlags());
