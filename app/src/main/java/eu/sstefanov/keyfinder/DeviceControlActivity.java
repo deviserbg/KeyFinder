@@ -294,6 +294,9 @@ public class DeviceControlActivity extends Activity {
      */
     public void takePicture(View view){
         Intent intent = new Intent(this, PictureActivity.class);
+        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, mDeviceName);
+        intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, mDeviceAddress);
+
         startActivity(intent);
     }
 
@@ -374,7 +377,7 @@ public class DeviceControlActivity extends Activity {
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
-        intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
+//        intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         return intentFilter;
     }
 }

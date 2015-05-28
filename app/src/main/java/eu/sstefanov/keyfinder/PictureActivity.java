@@ -38,37 +38,10 @@ public class PictureActivity extends Activity {
     public final static UUID UUID_ACTION_BUTTON =
             UUID.fromString(SampleGattAttributes.ACTION_BUTTON_CHARACTERISTIC);
 
-    private final String TAG_CAMERA_FRAGMENT = "camera_fragment";
+    public final static UUID UUID_ACTION_SERVICE =
+            UUID.fromString(SampleGattAttributes.ACTION_SERVICE);
 
-//    private Camera cameraObject;
-//    private ShowCamera showCamera;
-//    private ImageView pic;
-//    public static Camera isCameraAvailiable(){
-//        Camera object = null;
-//        try {
-//            object = Camera.open();
-//        }
-//        catch (Exception e){
-//        }
-//        return object;
-//    }
-//
-//    private Camera.PictureCallback capturedIt = new Camera.PictureCallback() {
-//
-//        @Override
-//        public void onPictureTaken(byte[] data, Camera camera) {
-//
-//            Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-//            if(bitmap==null){
-//                Toast.makeText(getApplicationContext(), "not taken", Toast.LENGTH_SHORT).show();
-//            }
-//            else
-//            {
-//                Toast.makeText(getApplicationContext(), "taken", Toast.LENGTH_SHORT).show();
-//            }
-//            cameraObject.release();
-//        }
-//    };
+    private final String TAG_CAMERA_FRAGMENT = "camera_fragment";
 
 
     // Code to manage Service lifecycle.
@@ -83,6 +56,15 @@ public class PictureActivity extends Activity {
             }
             // Automatically connects to the device upon successful start-up initialization.
             mBluetoothLeService.connect(mDeviceAddress);
+
+            // Listen for action button
+            BluetoothGattCharacteristic characteristic =
+                    mBluetoothLeService.getCharacteristic(UUID_ACTION_SERVICE, UUID_ACTION_BUTTON);
+
+            if (characteristic != null) {
+
+                mBluetoothLeService.setCharacteristicNotification(characteristic, true);
+            }
         }
 
         @Override
@@ -134,10 +116,12 @@ public class PictureActivity extends Activity {
 
 //        mDeviceAddress = "18:7A:93:02:86:8C";
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
-        bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
 
-        if (mBluetoothLeService != null) {
-            mBluetoothLeService.connect(mDeviceAddress);
+        if (bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE)) {
+
+            if (mBluetoothLeService != null) {
+                mBluetoothLeService.connect(mDeviceAddress);
+            }
         }
 
 //        pic = (ImageView)findViewById(R.id.imageView1);
@@ -171,6 +155,7 @@ public class PictureActivity extends Activity {
         if (mBluetoothLeService != null) {
             final boolean result = mBluetoothLeService.connect(mDeviceAddress);
             Log.d(TAG, "Connect request result=" + result);
+
         }
 
     }

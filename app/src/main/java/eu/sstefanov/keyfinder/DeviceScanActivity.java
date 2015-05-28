@@ -51,6 +51,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import eu.sstefanov.keyfinder.adparser.AdElement;
+import eu.sstefanov.keyfinder.adparser.AdParser;
+import eu.sstefanov.keyfinder.adparser.TypeFlags;
+import eu.sstefanov.keyfinder.adparser.TypeManufacturerData;
+import eu.sstefanov.keyfinder.adparser.TypeTXPowerLevel;
+
 /**
  * Activity for scanning and displaying available Bluetooth LE devices.
  */
@@ -322,12 +328,36 @@ public class DeviceScanActivity extends ListActivity {
                         mAdvert.put(device.getAddress(), Integer.valueOf(txPower));
 
 //                        double distance = calculateDistance(txPower, rssi);
-//                        mDistance.put(device.getAddress(), Double.valueOf(distance));
+//                        mDistance.put(device.getAddress(), String.valueOf(distance));
 
-                        List<AdRecord> adRecords = AdRecord.parseScanRecord(scanRecord);
+                        ArrayList<AdElement> ads = AdParser.parseAdData(scanRecord);
 
+//                        StringBuffer sb = new StringBuffer();
 
-                        mDistance.put(device.getAddress(), TextUtils.join(",", adRecords));
+                        String advert = "";
+
+                        for( int i = 0 ; i < ads.size() ; ++i ) {
+                            AdElement e = ads.get(i);
+//                            if( i > 0 )
+//                                sb.append(" ; ");
+//                            sb.append(e.toString());
+
+                            if (e instanceof TypeFlags) {
+                                TypeFlags flags = (TypeFlags)e;
+
+                                advert = String.valueOf(flags.getFlags());
+                            }
+
+//                            if (e instanceof TypeTXPowerLevel) {
+//                                TypeTXPowerLevel tx = (TypeTXPowerLevel) e;
+//
+//                                advert = tx.toString();
+//                            }
+                        }
+
+//                        String additionalData = new String( sb );
+                        mDistance.put(device.getAddress(), advert);
+
 //                    ScanRecord sr = ScanRecord.parseFromBytes(scanRecord);
 //
 //                    mAdvert.put(device.getAddress(), sr.getAdvertiseFlags());
