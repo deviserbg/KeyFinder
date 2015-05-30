@@ -17,17 +17,18 @@
 package eu.sstefanov.keyfinder;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattService;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.hardware.Camera;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -35,17 +36,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ExpandableListView;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
 //import com.example.android.bluetoothlegatt.camera.ShowCamera;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -83,6 +79,9 @@ public class DeviceControlActivity extends Activity {
     public final static UUID UUID_BATTERY_CHAR_ID =
             UUID.fromString(SampleGattAttributes.BATTERY_CHARACTERISTIC);
 
+    private AlertDialog alertDialog = null;
+    private Ringtone ringtone = null;
+
     // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -95,6 +94,7 @@ public class DeviceControlActivity extends Activity {
             }
             // Automatically connects to the device upon successful start-up initialization.
             mBluetoothLeService.connect(mDeviceAddress);
+
         }
 
         @Override
@@ -126,8 +126,28 @@ public class DeviceControlActivity extends Activity {
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
 //                displayGattServices(mBluetoothLeService.getSupportedGattServices());
+                // Listen for action button
+                BluetoothGattCharacteristic characteristic =
+                        mBluetoothLeService.getCharacteristic(BluetoothLeService.UUID_ACTION_SERVICE,
+                                BluetoothLeService.UUID_ACTION_BUTTON);
+
+                if (characteristic != null) {
+
+                    mBluetoothLeService.setCharacteristicNotification(characteristic, true);
+                }
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
+
+                String extraData = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
+
+                if (extraData.equals(BluetoothLeService.START_ALARM_FLAG)) {
+                    startAlarm();
+                } else if (extraData.equals(BluetoothLeService.STOP_ALARM_FLAG)) {
+                    stopAlarm();
+                }
+
                 displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
+
+
 //                snapIt(null);
             }
         }
@@ -315,6 +335,56 @@ public class DeviceControlActivity extends Activity {
         }
     }
 
+    /**
+     * Start alarm intent
+     */
+    private void startAlarm() {
+        mDataField.setText("Alarm is started");
+
+        if (alertDialog == null) {
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this)
+                    .setTitle("Stop Alarm")
+//                .setMessage("Are you sure you want to delete this entry?")
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            stopAlarm();
+                        }
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_alert);
+
+            alertDialog = alertDialogBuilder.create();
+
+            alertDialog.show();
+        }
+
+        if (ringtone != null) {
+            ringtone.stop();
+        } else {
+
+            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+            ringtone = RingtoneManager.getRingtone(getApplicationContext(), notification);
+            ringtone.play();
+        }
+
+//        Intent alarmIntent = new Intent(this, AlarmActivity.class);
+//        startActivity(alarmIntent);
+    }
+
+    private void stopAlarm() {
+        mDataField.setText("Stop Alarms");
+
+        if (ringtone != null) {
+            ringtone.stop();
+            ringtone = null;
+        }
+
+        if (alertDialog != null) {
+            alertDialog.cancel();
+            alertDialog = null;
+        }
+
+    }
+
     // Demonstrates how to iterate through the supported GATT Services/Characteristics.
     // In this sample, we populate the data structure that is bound to the ExpandableListView
     // on the UI.
@@ -377,7 +447,7 @@ public class DeviceControlActivity extends Activity {
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
-//        intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
+        intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         return intentFilter;
     }
 }

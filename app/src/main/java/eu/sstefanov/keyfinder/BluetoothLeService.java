@@ -66,6 +66,10 @@ public class BluetoothLeService extends Service {
     public final static String EXTRA_DATA =
             "com.example.bluetooth.le.EXTRA_DATA";
 
+    public final static String START_ALARM_FLAG = "start_alarm";
+    public final static String STOP_ALARM_FLAG = "stop_alarm";
+
+
     public final static UUID UUID_HEART_RATE_MEASUREMENT =
             UUID.fromString(SampleGattAttributes.HEART_RATE_MEASUREMENT);
 
@@ -174,22 +178,22 @@ public class BluetoothLeService extends Service {
 
                 int buttonPressType = characteristic.getIntValue(BluetoothGattCharacteristic.FORMAT_UINT8, 0);
 
+                // try to catch button events
                 if (buttonPressType == 1) {
                     Log.d(TAG, "Button is pressed single time ");
-
+                    intent.putExtra(EXTRA_DATA, STOP_ALARM_FLAG);
                 } else if (buttonPressType == 2) {
                     Log.d(TAG, "Button is pressed long time ");
-
-                    Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-                    Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
-                    r.play();
+                    intent.putExtra(EXTRA_DATA, START_ALARM_FLAG);
                 } else {
                     Log.d(TAG, "Not in range " + String.valueOf(buttonPressType));
+                    intent.putExtra(EXTRA_DATA, new String(data) + "\n" + stringBuilder.toString());
                 }
 
                 Log.d(TAG, "Button is pressed: " + stringBuilder.toString());
 
-                intent.putExtra(EXTRA_DATA, new String(data) + "\n" + stringBuilder.toString());
+//                intent.putExtra(EXTRA_DATA, new String(data) + "\n" + stringBuilder.toString());
+
             }
         } else if(UUID_BATTERY_CHAR_ID.equals(characteristic.getUuid())) {
             // int i = Integer.valueOf(Utils.bytesToHexString(paramAnonymousBluetoothGattCharacteristic.getValue()), 16).intValue();

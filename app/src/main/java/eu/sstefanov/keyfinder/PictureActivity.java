@@ -31,6 +31,9 @@ public class PictureActivity extends Activity {
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
 
+    public final static String EXTRA_DATA =
+            "com.example.bluetooth.le.EXTRA_DATA";
+
     private BluetoothLeService mBluetoothLeService;
     private String mDeviceAddress;
     private String mDeviceName;
@@ -100,7 +103,7 @@ public class PictureActivity extends Activity {
                 activateActionData(mBluetoothLeService.getSupportedGattServices());
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) {
 //                displayData(intent.getStringExtra(BluetoothLeService.EXTRA_DATA));
-                takePicture();
+                    takePicture();
             }
         }
     };
